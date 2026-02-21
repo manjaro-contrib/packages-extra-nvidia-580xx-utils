@@ -7,12 +7,12 @@
 # Contributor: Thomas Baechler <thomas@archlinux.org>
 
 pkgbase=nvidia-580xx-utils
-pkgname=('nvidia-580xx-utils' 'opencl-nvidia-580xx' 'nvidia-580xx-dkms' 'mhwd-nvidia-580xx')
+pkgname=('nvidia-580xx-utils' 'opencl-nvidia-580xx' 'nvidia-580xx-dkms' 'nvidia-580xx-open-dkms' 'mhwd-nvidia-580xx')
 pkgver=580.126.18
-pkgrel=1
+pkgrel=2
 arch=('x86_64')
 url="http://www.nvidia.com/"
-license=('custom')
+license=('LicenseRef-custom')
 options=('!strip')
 _pkg="NVIDIA-Linux-x86_64-${pkgver}"
 _pkg_open="NVIDIA-kernel-module-source-${pkgver}"
@@ -23,22 +23,24 @@ source=('mhwd-nvidia'
         'systemd-homed-override.conf'
         'systemd-suspend-override.conf'
         'nvidia-sleep.conf'
-        "https://download.nvidia.com/XFree86/Linux-x86_64/${pkgver}/${_pkg}.run"
+        "https://us.download.nvidia.com/XFree86/Linux-x86_64/${pkgver}/${_pkg}.run"
+        "https://download.nvidia.com/XFree86/NVIDIA-kernel-module-source/${_pkg_open}.tar.xz"
         '0001-Enable-atomic-kernel-modesetting-by-default.patch'
+        '0002-Add-IBT-support.patch'
         'limit-vram-usage')
 
-sha256sums=(
-    'ddffe7033abf38253b50d4c02d780a270f79089bbe163994e00a4d7c91d64f0e'
-    'be99ff3def641bb900c2486cce96530394c5dc60548fc4642f19d3a4c784134d'
-    'f77a5247a3ba63e9fad3a3b2822d0fcfa51e0f79b5a90bd79bf08ea34b64ab07'
-    '0e54249a7754b668b436f0f7aa7e95fff68edbb12a93dbee4660e09a8c695f84'
-    'c5aa7b8abe69e72bfdc6b9ee8afbfd350bcc557e894558f2e6e4087fa9aa0dd8'
-    '1d053c5078387021338cfc3a732bed61be1a20a549775573788e9134775c8149'
-    '12d31a5425aba66be9e9129012cde82755ad4d5b7ce9933df8fc398c4fa8d631'
-    'a7781b2e1c2d65c6580914c76e79ed454d02945df84711c033070a092a9ab49d'
-    '163c57160cc1033020680f638b44ebd94b496152dcd8951e87d5077d4d5c2009'
-    'b14f7a65359c05c373ddfc750cd4cf086a48e815489d93ad5cbe1dbf84bf8f5a'
-)
+sha256sums=('ddffe7033abf38253b50d4c02d780a270f79089bbe163994e00a4d7c91d64f0e'
+            'be99ff3def641bb900c2486cce96530394c5dc60548fc4642f19d3a4c784134d'
+            'f77a5247a3ba63e9fad3a3b2822d0fcfa51e0f79b5a90bd79bf08ea34b64ab07'
+            '0e54249a7754b668b436f0f7aa7e95fff68edbb12a93dbee4660e09a8c695f84'
+            'c5aa7b8abe69e72bfdc6b9ee8afbfd350bcc557e894558f2e6e4087fa9aa0dd8'
+            '1d053c5078387021338cfc3a732bed61be1a20a549775573788e9134775c8149'
+            '12d31a5425aba66be9e9129012cde82755ad4d5b7ce9933df8fc398c4fa8d631'
+            'a7781b2e1c2d65c6580914c76e79ed454d02945df84711c033070a092a9ab49d'
+            '4f2b776d75707d6b4770bab4b0a7aba95355fe833bc4cee54100c29839b53e6e'
+            '163c57160cc1033020680f638b44ebd94b496152dcd8951e87d5077d4d5c2009'
+            '40a520b34d55807e6fae54567f41f582235f1a4b22538795a38253ea9df9791d'
+            'b14f7a65359c05c373ddfc750cd4cf086a48e815489d93ad5cbe1dbf84bf8f5a')
 
 create_links() {
     # create soname links
@@ -59,7 +61,16 @@ prepare() {
     # This avoids various issue, when Simplefb is used
     # https://gitlab.archlinux.org/archlinux/packaging/packages/nvidia-utils/-/issues/14
     # https://github.com/rpmfusion/nvidia-kmod/blob/master/make_modeset_default.patch
-    patch -Np1 -i "${srcdir}/0001-Enable-atomic-kernel-modesetting-by-default.patch" -d "${srcdir}/${_pkg}/kernel"
+#    patch -Np2 -i "${srcdir}/0001-Enable-atomic-kernel-modesetting-by-default.patch" -d "${srcdir}/${_pkg}/kernel"
+
+    # Kernel-open
+#    patch -Np1 -i "${srcdir}/0001-Enable-atomic-kernel-modesetting-by-default.patch" -d "${srcdir}/${_pkg_open}"
+    patch -Np1 -i "${srcdir}/0002-Add-IBT-support.patch" -d "${srcdir}/${_pkg_open}"
+
+    # Attempt to make builds reproducible
+    sed -i "s/^  HOSTNAME.*/  HOSTNAME = echo manjarolinux/" "${srcdir}/${_pkg_open}/utils.mk"
+    sed -i "s/^WHOAMI.*/WHOAMI = echo manjarolinux-builder/" "${srcdir}/${_pkg_open}/utils.mk"
+    sed -i "s/^DATE.*/DATE = date -r version.mk/" "${srcdir}/${_pkg_open}/utils.mk"
 
     shopt -s globstar
     for conf in "${srcdir}"/**/dkms.conf; do
@@ -81,15 +92,28 @@ BUILT_MODULE_NAME[4]="nvidia-peermem"\
 DEST_MODULE_LOCATION[4]="/kernel/drivers/video"' "$conf"
     done
     shopt -u globstar
+
+    # Additional parameters for open kernel modules
+    cat <<EOF >>"${srcdir}/${_pkg_open}/kernel-open/dkms.conf"
+BUILT_MODULE_LOCATION[0]="kernel-open"
+BUILT_MODULE_LOCATION[1]="kernel-open"
+BUILT_MODULE_LOCATION[2]="kernel-open"
+BUILT_MODULE_LOCATION[3]="kernel-open"
+BUILT_MODULE_LOCATION[4]="kernel-open"
+EOF
+
+    # nvidia-settings desktop file Exec
+    desktop-file-edit --set-key=Exec --set-value=nvidia-settings nvidia-settings.desktop
 }
 
 package_opencl-nvidia-580xx() {
-    pkgdesc="OpenCL implemention for NVIDIA (580xx)"
+    pkgdesc="OpenCL implemention for NVIDIA 580xx"
     depends=('zlib')
     optdepends=('opencl-headers: headers necessary for OpenCL development')
-    provides=('opencl-driver' 'opencl-nvidia')
+    provides=("opencl-nvidia=${pkgver}" 'opencl-driver')
     conflicts=('opencl-nvidia')
-    cd "${_pkg}"
+
+    cd "$_pkg"
 
     # OpenCL
     install -Dm644 nvidia.icd "${pkgdir}/etc/OpenCL/vendors/nvidia.icd"
@@ -102,11 +126,12 @@ package_opencl-nvidia-580xx() {
 }
 
 package_nvidia-580xx-dkms() {
-    pkgdesc="NVIDIA kernel modules - module sources (580xx)"
-    depends=('dkms' "nvidia-580xx-utils=${pkgver}" 'libglvnd')
-    provides=('NVIDIA-MODULE' 'nvidia')
-    conflicts=('NVIDIA-MODULE' 'nvidia' 'nvidia-open-dkms')
-    cd ${_pkg}
+    pkgdesc="NVIDIA 580 kernel modules - module sources"
+    depends=('dkms' "nvidia-utils=${pkgver}" 'libglvnd')
+    provides=('NVIDIA-MODULE' "nvidia=${pkgver}")
+    conflicts=('NVIDIA-MODULE' 'nvidia')
+
+    cd "${_pkg}"
 
     install -dm 755 "${pkgdir}/usr/src"
     cp -dr --no-preserve='ownership' kernel "${pkgdir}/usr/src/nvidia-${pkgver}"
@@ -115,21 +140,22 @@ package_nvidia-580xx-dkms() {
 }
 
 package_nvidia-580xx-utils() {
-    pkgdesc="NVIDIA drivers utilities (580xx)"
+    pkgdesc="NVIDIA 580 drivers utilities"
     depends=('libglvnd' 'egl-wayland' 'egl-gbm' 'egl-x11')
     optdepends=(
-        'nvidia-580xx-settings: configuration tool'
+        "nvidia-settings=${pkgver}: configuration tool"
         'xorg-server: Xorg support'
         'xorg-server-devel: nvidia-xconfig'
+        "opencl-nvidia=${pkgver}: OpenCL support"
     )
-    conflicts=('nvidia-libgl' 'nvidia-utils')
-    provides=('vulkan-driver' 'nvidia-utils' 'opengl-driver' 'nvidia-libgl')
+    provides=('vulkan-driver' 'opengl-driver' 'nvidia-libgl' "nvidia-utils=${pkgver}")
+    conflicts=('nvidia-libgl')
     replaces=('nvidia-libgl')
     install="${pkgname}.install"
 
     cd "${_pkg}"
 
-    # Check http://us.download.nvidia.com/XFree86/Linux-x86_64/${pkgver}/README/installedcomponents.html
+    # Check https://us.download.nvidia.com/XFree86/Linux-x86_64/${pkgver}/README/installedcomponents.html
     # for hints on what needs to be installed where.
 
     # X driver
@@ -258,7 +284,7 @@ package_nvidia-580xx-utils() {
     # application profiles
     install -Dm644 "nvidia-application-profiles-${pkgver}-rc" "${pkgdir}/usr/share/nvidia/nvidia-application-profiles-${pkgver}-rc"
     install -Dm644 "nvidia-application-profiles-${pkgver}-key-documentation" "${pkgdir}/usr/share/nvidia/nvidia-application-profiles-${pkgver}-key-documentation"
-    # Application profiles to fix vram usage at electron applications
+    # Application profiles to fix vram usage for electron applications
     install -Dm644 "$srcdir"/limit-vram-usage "${pkgdir}/etc/nvidia/nvidia-application-profiles-rc.d/limit-vram-usage"
 
     install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/nvidia-utils/LICENSE"
@@ -302,6 +328,20 @@ END
     install -Dm644 sandboxutils-filelist.json "${pkgdir}/usr/share/nvidia/files.d/sandboxutils-filelist.json"
 
     create_links
+}
+
+package_nvidia-580xx-open-dkms() {
+  pkgdesc="NVIDIA 580 open kernel modules - module sources"
+  depends+=('dkms' "nvidia-utils=${pkgver}" 'libglvnd')
+  license=('MIT AND GPL-2.0-only')
+  conflicts=('nvidia-open' 'NVIDIA-MODULE')
+  provides=('nvidia-open' 'NVIDIA-MODULE')
+
+  install -dm 755 "${pkgdir}/usr/src"
+  cp -dr --no-preserve='ownership' "${srcdir}/${_pkg_open}" "${pkgdir}/usr/src/nvidia-$pkgver"
+  mv "${pkgdir}/usr/src/nvidia-$pkgver/kernel-open/dkms.conf" "${pkgdir}/usr/src/nvidia-$pkgver/dkms.conf"
+
+  install -Dm644 "${srcdir}/${_pkg_open}/COPYING" "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
 }
 
 package_mhwd-nvidia-580xx() {
