@@ -8,8 +8,8 @@
 
 pkgbase=nvidia-580xx-utils
 pkgname=('nvidia-580xx-utils' 'opencl-nvidia-580xx' 'nvidia-580xx-dkms' 'nvidia-580xx-open-dkms' 'mhwd-nvidia-580xx')
-pkgver=580.126.18
-pkgrel=2
+pkgver=580.142
+pkgrel=1
 arch=('x86_64')
 url="http://www.nvidia.com/"
 license=('LicenseRef-custom')
@@ -25,7 +25,6 @@ source=('mhwd-nvidia'
         'nvidia-sleep.conf'
         "https://us.download.nvidia.com/XFree86/Linux-x86_64/${pkgver}/${_pkg}.run"
         "https://download.nvidia.com/XFree86/NVIDIA-kernel-module-source/${_pkg_open}.tar.xz"
-        '0001-Enable-atomic-kernel-modesetting-by-default.patch'
         '0002-Add-IBT-support.patch'
         'limit-vram-usage')
 
@@ -36,9 +35,8 @@ sha256sums=('ddffe7033abf38253b50d4c02d780a270f79089bbe163994e00a4d7c91d64f0e'
             'c5aa7b8abe69e72bfdc6b9ee8afbfd350bcc557e894558f2e6e4087fa9aa0dd8'
             '1d053c5078387021338cfc3a732bed61be1a20a549775573788e9134775c8149'
             '12d31a5425aba66be9e9129012cde82755ad4d5b7ce9933df8fc398c4fa8d631'
-            'a7781b2e1c2d65c6580914c76e79ed454d02945df84711c033070a092a9ab49d'
-            '4f2b776d75707d6b4770bab4b0a7aba95355fe833bc4cee54100c29839b53e6e'
-            '163c57160cc1033020680f638b44ebd94b496152dcd8951e87d5077d4d5c2009'
+            '20915fcf3ffe89c3550cf93b60a04a285453150d92e2468e1911a43620447563'
+            'ad50b7f88559016dd4ee8d6cf3c0980cf5a4748eded157c8a89871c1f0719b90'
             '40a520b34d55807e6fae54567f41f582235f1a4b22538795a38253ea9df9791d'
             'b14f7a65359c05c373ddfc750cd4cf086a48e815489d93ad5cbe1dbf84bf8f5a')
 
@@ -57,14 +55,7 @@ prepare() {
     cd "${_pkg}"
     bsdtar -xf nvidia-persistenced-init.tar.bz2
 
-    # Enable modeset by default
-    # This avoids various issue, when Simplefb is used
-    # https://gitlab.archlinux.org/archlinux/packaging/packages/nvidia-utils/-/issues/14
-    # https://github.com/rpmfusion/nvidia-kmod/blob/master/make_modeset_default.patch
-#    patch -Np2 -i "${srcdir}/0001-Enable-atomic-kernel-modesetting-by-default.patch" -d "${srcdir}/${_pkg}/kernel"
-
     # Kernel-open
-#    patch -Np1 -i "${srcdir}/0001-Enable-atomic-kernel-modesetting-by-default.patch" -d "${srcdir}/${_pkg_open}"
     patch -Np1 -i "${srcdir}/0002-Add-IBT-support.patch" -d "${srcdir}/${_pkg_open}"
 
     # Attempt to make builds reproducible
