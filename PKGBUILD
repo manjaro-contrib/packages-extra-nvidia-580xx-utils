@@ -9,7 +9,7 @@
 pkgbase=nvidia-580xx-utils
 pkgname=('nvidia-580xx-utils' 'opencl-nvidia-580xx' 'nvidia-580xx-dkms' 'nvidia-580xx-open-dkms' 'mhwd-nvidia-580xx')
 pkgver=580.142
-pkgrel=2
+pkgrel=3
 arch=('x86_64')
 url="http://www.nvidia.com/"
 license=('LicenseRef-custom')
@@ -64,6 +64,10 @@ prepare() {
     # https://forums.developer.nvidia.com/t/580-release-feedback-discussion/341205/1058
     patch -Np1 -i "${srcdir}/0002-Fix-hardware-cursor-crash.patch" -d "${srcdir}/${_pkg}/kernel"
     patch -Np1 -i "${srcdir}/0002-Fix-hardware-cursor-crash.patch" -d "${srcdir}/${_pkg_open}/kernel-open"
+
+    # Fix for 7.0
+    patch -Np2 -i "${srcdir}/kernel-7.0.patch" -d "${srcdir}/${_pkg}/kernel"
+    patch -Np1 -i "${srcdir}/kernel-7.0.patch" -d "${srcdir}/${_pkg_open}/"
 
     # Attempt to make builds reproducible
     sed -i "s/^  HOSTNAME.*/  HOSTNAME = echo manjarolinux/" "${srcdir}/${_pkg_open}/utils.mk"
