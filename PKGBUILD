@@ -25,6 +25,7 @@ source=('mhwd-nvidia'
         'nvidia-sleep.conf'
         "https://us.download.nvidia.com/XFree86/Linux-x86_64/${pkgver}/${_pkg}.run"
         "https://download.nvidia.com/XFree86/NVIDIA-kernel-module-source/${_pkg_open}.tar.xz"
+        'kernel-7.0.patch'
         '0001-Add-IBT-support.patch'
         '0002-Fix-hardware-cursor-crash.patch'
         'limit-vram-usage')
@@ -38,6 +39,7 @@ sha256sums=('ddffe7033abf38253b50d4c02d780a270f79089bbe163994e00a4d7c91d64f0e'
             '12d31a5425aba66be9e9129012cde82755ad4d5b7ce9933df8fc398c4fa8d631'
             '20915fcf3ffe89c3550cf93b60a04a285453150d92e2468e1911a43620447563'
             'ad50b7f88559016dd4ee8d6cf3c0980cf5a4748eded157c8a89871c1f0719b90'
+            '54f765d28020cee170d18229e58c46966a19efd4f0bb2053efaf88ba5204d281'
             '40a520b34d55807e6fae54567f41f582235f1a4b22538795a38253ea9df9791d'
             'c1a1cf05dd12efd67858180461ad97a6ebe206b55b56df207854b322ce734613'
             'b14f7a65359c05c373ddfc750cd4cf086a48e815489d93ad5cbe1dbf84bf8f5a')
@@ -58,16 +60,14 @@ prepare() {
     bsdtar -xf nvidia-persistenced-init.tar.bz2
 
     patch -Np1 -i "${srcdir}/0001-Add-IBT-support.patch" -d "${srcdir}/${_pkg_open}"
+    patch -Np1 -i "${srcdir}/kernel-7.0.patch" -d "${srcdir}/${_pkg_open}/"
+    patch -Np2 -i "${srcdir}/kernel-7.0.patch" -d "${srcdir}/${_pkg}/kernel"
 
     # Fixes KDE Plasma Wayland crash without using KWIN_FORCE_SW_CURSOR=1
     # Author: thesword53
     # https://forums.developer.nvidia.com/t/580-release-feedback-discussion/341205/1058
     patch -Np1 -i "${srcdir}/0002-Fix-hardware-cursor-crash.patch" -d "${srcdir}/${_pkg}/kernel"
     patch -Np1 -i "${srcdir}/0002-Fix-hardware-cursor-crash.patch" -d "${srcdir}/${_pkg_open}/kernel-open"
-
-    # Fix for 7.0
-    patch -Np2 -i "${srcdir}/kernel-7.0.patch" -d "${srcdir}/${_pkg}/kernel"
-    patch -Np1 -i "${srcdir}/kernel-7.0.patch" -d "${srcdir}/${_pkg_open}/"
 
     # Attempt to make builds reproducible
     sed -i "s/^  HOSTNAME.*/  HOSTNAME = echo manjarolinux/" "${srcdir}/${_pkg_open}/utils.mk"
