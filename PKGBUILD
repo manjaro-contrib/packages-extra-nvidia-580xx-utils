@@ -9,11 +9,12 @@
 pkgbase=nvidia-580xx-utils
 pkgname=('nvidia-580xx-utils' 'opencl-nvidia-580xx' 'nvidia-580xx-dkms' 'nvidia-580xx-open-dkms' 'mhwd-nvidia-580xx')
 pkgver=580.159.03
-pkgrel=1
+pkgrel=2
 arch=('x86_64')
 url="http://www.nvidia.com/"
 license=('LicenseRef-custom')
 options=('!strip')
+makedepends=('desktop-file-utils')
 _pkg="NVIDIA-Linux-x86_64-${pkgver}"
 _pkg_open="NVIDIA-kernel-module-source-${pkgver}"
 source=('mhwd-nvidia'
@@ -27,6 +28,7 @@ source=('mhwd-nvidia'
         "https://download.nvidia.com/XFree86/NVIDIA-kernel-module-source/${_pkg_open}.tar.xz"
         '0001-Add-IBT-support.patch'
         '0002-Fix-hardware-cursor-crash.patch'
+        'kernel-7.1.0-rc2.patch'
         'limit-vram-usage')
 
 sha256sums=('ddffe7033abf38253b50d4c02d780a270f79089bbe163994e00a4d7c91d64f0e'
@@ -40,6 +42,7 @@ sha256sums=('ddffe7033abf38253b50d4c02d780a270f79089bbe163994e00a4d7c91d64f0e'
             '16588f7c5e1ec24bd3279dcf085627f0c5e4f8aaa3942c42aeedb7855f929f2d'
             '40a520b34d55807e6fae54567f41f582235f1a4b22538795a38253ea9df9791d'
             'c1a1cf05dd12efd67858180461ad97a6ebe206b55b56df207854b322ce734613'
+            '51e17603edbe4064a4f774e54b4a984a55a59f3aae6de2b664f735c9673c4e06'
             'b14f7a65359c05c373ddfc750cd4cf086a48e815489d93ad5cbe1dbf84bf8f5a')
 
 create_links() {
@@ -64,6 +67,10 @@ prepare() {
     # https://forums.developer.nvidia.com/t/580-release-feedback-discussion/341205/1058
     patch -Np1 -i "${srcdir}/0002-Fix-hardware-cursor-crash.patch" -d "${srcdir}/${_pkg}/kernel"
     patch -Np1 -i "${srcdir}/0002-Fix-hardware-cursor-crash.patch" -d "${srcdir}/${_pkg_open}/kernel-open"
+
+    # Add 7.1.0 support
+    patch -Np2 -i "${srcdir}/kernel-7.1.0-rc2.patch" -d "${srcdir}/${_pkg}/kernel"
+    patch -Np2 -i "${srcdir}/kernel-7.1.0-rc2.patch" -d "${srcdir}/${_pkg}/kernel-open"
 
     # Attempt to make builds reproducible
     sed -i "s/^  HOSTNAME.*/  HOSTNAME = echo manjarolinux/" "${srcdir}/${_pkg_open}/utils.mk"
