@@ -70,7 +70,7 @@ prepare() {
 
     # Add 7.1.0 support
     patch -Np2 -i "${srcdir}/kernel-7.1.0-rc2.patch" -d "${srcdir}/${_pkg}/kernel"
-    patch -Np2 -i "${srcdir}/kernel-7.1.0-rc2.patch" -d "${srcdir}/${_pkg}/kernel-open"
+    patch -Np2 -i "${srcdir}/kernel-7.1.0-rc2.patch" -d "${srcdir}/${_pkg_open}/kernel-open"
 
     # Attempt to make builds reproducible
     sed -i "s/^  HOSTNAME.*/  HOSTNAME = echo manjarolinux/" "${srcdir}/${_pkg_open}/utils.mk"
