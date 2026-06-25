@@ -8,7 +8,7 @@
 
 pkgbase=nvidia-580xx-utils
 pkgname=('nvidia-580xx-utils' 'opencl-nvidia-580xx' 'nvidia-580xx-dkms' 'nvidia-580xx-open-dkms' 'mhwd-nvidia-580xx')
-pkgver=580.159.04
+pkgver=580.173.02
 pkgrel=1
 arch=('x86_64')
 url="http://www.nvidia.com/"
@@ -37,8 +37,8 @@ sha256sums=('ddffe7033abf38253b50d4c02d780a270f79089bbe163994e00a4d7c91d64f0e'
             'c5aa7b8abe69e72bfdc6b9ee8afbfd350bcc557e894558f2e6e4087fa9aa0dd8'
             '1d053c5078387021338cfc3a732bed61be1a20a549775573788e9134775c8149'
             '12d31a5425aba66be9e9129012cde82755ad4d5b7ce9933df8fc398c4fa8d631'
-            'c1e66761b088d17b3adf6cb6979de9af38be2684d102b001a176dcfafabdca1e'
-            '455ec9d9652554942209dd53fe6efd66a0a8668c18e8091e63f94637bf919f5a'
+            '8d8eb9001e05a9a8a663d3d5d304feb64ef2844ee185ccdfd952786820f46e1b'
+            '44dc467cf7878c51aee571fae90eaabf1906a011521d92cb2133d491de142fc7'
             '40a520b34d55807e6fae54567f41f582235f1a4b22538795a38253ea9df9791d'
             'c1a1cf05dd12efd67858180461ad97a6ebe206b55b56df207854b322ce734613'
             'b14f7a65359c05c373ddfc750cd4cf086a48e815489d93ad5cbe1dbf84bf8f5a')
