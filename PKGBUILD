@@ -9,7 +9,7 @@
 pkgbase=nvidia-580xx-utils
 pkgname=('nvidia-580xx-utils' 'opencl-nvidia-580xx' 'nvidia-580xx-dkms' 'nvidia-580xx-open-dkms' 'mhwd-nvidia-580xx')
 pkgver=580.173.02
-pkgrel=1
+pkgrel=2
 arch=('x86_64')
 url="http://www.nvidia.com/"
 license=('LicenseRef-custom')
@@ -110,7 +110,8 @@ package_opencl-nvidia-580xx() {
     depends=('zlib')
     optdepends=('opencl-headers: headers necessary for OpenCL development')
     provides=("opencl-nvidia=${pkgver}" 'opencl-driver')
-    conflicts=('opencl-nvidia')
+    conflicts=('opencl-nvidia' 'opencl-nvidia-570xx' 'opencl-nvidia-575xx')
+    replaces=('opencl-nvidia-570xx' 'opencl-nvidia-575xx')
 
     cd "$_pkg"
 
@@ -128,7 +129,8 @@ package_nvidia-580xx-dkms() {
     pkgdesc="NVIDIA 580 kernel modules - module sources"
     depends=('dkms' "nvidia-utils=${pkgver}" 'libglvnd')
     provides=('NVIDIA-MODULE' "nvidia=${pkgver}")
-    conflicts=('NVIDIA-MODULE' 'nvidia')
+    conflicts=('NVIDIA-MODULE' 'nvidia' 'nvidia-570xx-dkms' 'nvidia-580xx-dkms')
+    replaces=('nvidia-570xx-dkms' 'nvidia-580xx-dkms')
 
     cd "${_pkg}"
 
@@ -148,8 +150,8 @@ package_nvidia-580xx-utils() {
         "opencl-nvidia=${pkgver}: OpenCL support"
     )
     provides=('vulkan-driver' 'opengl-driver' 'nvidia-libgl' "nvidia-utils=${pkgver}")
-    conflicts=('nvidia-libgl')
-    replaces=('nvidia-libgl')
+    conflicts=('nvidia-libgl' 'nvidia-570xx-utils' 'nvidia-580xx-utils')
+    replaces=('nvidia-libgl' 'nvidia-570xx-utils' 'nvidia-580xx-utils')
     install="${pkgname}.install"
 
     cd "${_pkg}"
@@ -333,8 +335,9 @@ package_nvidia-580xx-open-dkms() {
   pkgdesc="NVIDIA 580 open kernel modules - module sources"
   depends+=('dkms' "nvidia-utils=${pkgver}" 'libglvnd')
   license=('MIT AND GPL-2.0-only')
-  conflicts=('nvidia-open' 'NVIDIA-MODULE')
   provides=('nvidia-open' 'NVIDIA-MODULE')
+  conflicts=('nvidia-open' 'NVIDIA-MODULE' 'nvidia-570xx-open-dkms' 'nvidia-575xx-open-dkms')
+  replaces=('nvidia-570xx-open-dkms' 'nvidia-575xx-open-dkms')
 
   install -dm 755 "${pkgdir}/usr/src"
   cp -dr --no-preserve='ownership' "${srcdir}/${_pkg_open}" "${pkgdir}/usr/src/nvidia-$pkgver"
@@ -347,6 +350,8 @@ package_mhwd-nvidia-580xx() {
     pkgdesc="MHWD module-ids for nvidia ${pkgver}"
     arch=('any')
     depends=('mhwd')
+    conflicts=('mhwd-nvidia-570xx' 'mhwd-nvidia-575xx')
+    replaces=('mhwd-nvidia-570xx' 'mhwd-nvidia-575xx')
 
     install -d "$pkgdir/var/lib/mhwd/ids/pci/"
 
