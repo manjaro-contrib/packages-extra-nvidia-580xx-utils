@@ -9,7 +9,7 @@
 pkgbase=nvidia-580xx-utils
 pkgname=('nvidia-580xx-utils' 'opencl-nvidia-580xx' 'nvidia-580xx-dkms' 'nvidia-580xx-open-dkms' 'mhwd-nvidia-580xx')
 pkgver=580.173.02
-pkgrel=2
+pkgrel=3
 arch=('x86_64')
 url="http://www.nvidia.com/"
 license=('LicenseRef-custom')
@@ -129,8 +129,8 @@ package_nvidia-580xx-dkms() {
     pkgdesc="NVIDIA 580 kernel modules - module sources"
     depends=('dkms' "nvidia-utils=${pkgver}" 'libglvnd')
     provides=('NVIDIA-MODULE' "nvidia=${pkgver}")
-    conflicts=('NVIDIA-MODULE' 'nvidia' 'nvidia-570xx-dkms' 'nvidia-580xx-dkms')
-    replaces=('nvidia-570xx-dkms' 'nvidia-580xx-dkms')
+    conflicts=('NVIDIA-MODULE' 'nvidia' 'nvidia-570xx-dkms' 'nvidia-575xx-dkms')
+    replaces=('nvidia-570xx-dkms' 'nvidia-575xx-dkms')
 
     cd "${_pkg}"
 
@@ -150,8 +150,8 @@ package_nvidia-580xx-utils() {
         "opencl-nvidia=${pkgver}: OpenCL support"
     )
     provides=('vulkan-driver' 'opengl-driver' 'nvidia-libgl' "nvidia-utils=${pkgver}")
-    conflicts=('nvidia-libgl' 'nvidia-570xx-utils' 'nvidia-580xx-utils')
-    replaces=('nvidia-libgl' 'nvidia-570xx-utils' 'nvidia-580xx-utils')
+    conflicts=('nvidia-libgl' 'nvidia-570xx-utils' 'nvidia-575xx-utils')
+    replaces=('nvidia-libgl' 'nvidia-570xx-utils' 'nvidia-575xx-utils')
     install="${pkgname}.install"
 
     cd "${_pkg}"
