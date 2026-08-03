@@ -8,8 +8,8 @@
 
 pkgbase=nvidia-580xx-utils
 pkgname=('nvidia-580xx-utils' 'opencl-nvidia-580xx' 'nvidia-580xx-dkms' 'nvidia-580xx-open-dkms' 'mhwd-nvidia-580xx')
-pkgver=580.173.02
-pkgrel=3
+pkgver=580.178.04
+pkgrel=1
 arch=('x86_64')
 url="http://www.nvidia.com/"
 license=('LicenseRef-custom')
@@ -26,10 +26,10 @@ source=('mhwd-nvidia'
         'nvidia-sleep.conf'
         "https://us.download.nvidia.com/XFree86/Linux-x86_64/${pkgver}/${_pkg}.run"
         "https://download.nvidia.com/XFree86/NVIDIA-kernel-module-source/${_pkg_open}.tar.xz"
-        '0001-Add-IBT-support.patch'
-        '0002-Fix-hardware-cursor-crash.patch'
-        'limit-vram-usage')
-
+        '0001-Enable-atomic-kernel-modesetting-by-default.patch'
+        '0002-Add-IBT-support.patch'
+        'limit-vram-usage'
+        'fix-hw-cursor-kde.patch')
 sha256sums=('ddffe7033abf38253b50d4c02d780a270f79089bbe163994e00a4d7c91d64f0e'
             'be99ff3def641bb900c2486cce96530394c5dc60548fc4642f19d3a4c784134d'
             'f77a5247a3ba63e9fad3a3b2822d0fcfa51e0f79b5a90bd79bf08ea34b64ab07'
@@ -37,11 +37,12 @@ sha256sums=('ddffe7033abf38253b50d4c02d780a270f79089bbe163994e00a4d7c91d64f0e'
             'c5aa7b8abe69e72bfdc6b9ee8afbfd350bcc557e894558f2e6e4087fa9aa0dd8'
             '1d053c5078387021338cfc3a732bed61be1a20a549775573788e9134775c8149'
             '12d31a5425aba66be9e9129012cde82755ad4d5b7ce9933df8fc398c4fa8d631'
-            '8d8eb9001e05a9a8a663d3d5d304feb64ef2844ee185ccdfd952786820f46e1b'
-            '44dc467cf7878c51aee571fae90eaabf1906a011521d92cb2133d491de142fc7'
+            '5975a86ee45bffcb626f51ae33d1169b108186a2ea47ad651e72f13fa4b6d6f9'
+            '060749a0df733af2d0bc863fff4581faca398048d17dbc691d039141ead391d8'
+            '163c57160cc1033020680f638b44ebd94b496152dcd8951e87d5077d4d5c2009'
             '40a520b34d55807e6fae54567f41f582235f1a4b22538795a38253ea9df9791d'
-            'c1a1cf05dd12efd67858180461ad97a6ebe206b55b56df207854b322ce734613'
-            'b14f7a65359c05c373ddfc750cd4cf086a48e815489d93ad5cbe1dbf84bf8f5a')
+            'b14f7a65359c05c373ddfc750cd4cf086a48e815489d93ad5cbe1dbf84bf8f5a'
+            'c1a1cf05dd12efd67858180461ad97a6ebe206b55b56df207854b322ce734613')
 
 create_links() {
     # create soname links
@@ -58,13 +59,17 @@ prepare() {
     cd "${_pkg}"
     bsdtar -xf nvidia-persistenced-init.tar.bz2
 
-    patch -Np1 -i "${srcdir}/0001-Add-IBT-support.patch" -d "${srcdir}/${_pkg_open}"
+    # Enable modeset by default
+    # This avoids various issue, when Simplefb is used
+    # https://gitlab.archlinux.org/archlinux/packaging/packages/nvidia-utils/-/issues/14
+    # https://github.com/rpmfusion/nvidia-kmod/blob/master/make_modeset_default.patch
+    patch -Np1 -i "${srcdir}/0001-Enable-atomic-kernel-modesetting-by-default.patch" -d "${srcdir}/${_pkg}/kernel"
+    patch -Np1 -i "${srcdir}/fix-hw-cursor-kde.patch" -d "${srcdir}/${_pkg}/kernel"
 
-    # Fixes KDE Plasma Wayland crash without using KWIN_FORCE_SW_CURSOR=1
-    # Author: thesword53
-    # https://forums.developer.nvidia.com/t/580-release-feedback-discussion/341205/1058
-    patch -Np1 -i "${srcdir}/0002-Fix-hardware-cursor-crash.patch" -d "${srcdir}/${_pkg}/kernel"
-    patch -Np1 -i "${srcdir}/0002-Fix-hardware-cursor-crash.patch" -d "${srcdir}/${_pkg_open}/kernel-open"
+    # Fix for https://bugs.archlinux.org/task/74886
+    # NVIDIA-open
+    patch -Np1 -i "${srcdir}/0001-Enable-atomic-kernel-modesetting-by-default.patch" -d "${srcdir}/${_pkg_open}/kernel-open"
+    patch -Np1 -i "${srcdir}/0002-Add-IBT-support.patch" -d "${srcdir}/${_pkg_open}/"
 
     # Attempt to make builds reproducible
     sed -i "s/^  HOSTNAME.*/  HOSTNAME = echo manjarolinux/" "${srcdir}/${_pkg_open}/utils.mk"
